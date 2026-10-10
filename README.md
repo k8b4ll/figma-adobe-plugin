@@ -50,4 +50,12 @@ If the panel isn't running, the plugin offers to download the SVG files instead.
 
 ## License
 
-MIT
+This project is released under the MIT License.
+
+In plain terms: you're free to use, copy, modify, and share this plugin, including for commercial work. You just need to keep the copyright notice and license text with it. It's provided "as is", without warranty, so use it at your own risk and keep backups of your work.
+
+Copyright (c) 2026 katelyn moro
+
+Disclaimer
+
+Figma to Adobe Bridge is an independent project. It is not affiliated with, endorsed by, or sponsored by Figma, Inc. or Adobe Inc. Figma, Adobe, Illustrator, and After Effects are trademarks of their respective owners.
