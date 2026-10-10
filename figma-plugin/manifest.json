@@ -1,0 +1,13 @@
+{
+  "name": "Figma to Adobe Bridge",
+  "id": "000000000000000000",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["http://localhost:3790", "http://localhost:3791"],
+    "reasoning": "Sends exported layers to the Figma Bridge panel running locally inside After Effects (port 3790) or Illustrator (port 3791). No data leaves your computer."
+  }
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, sans-serif; font-size: 12px; margin: 0; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+      background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #000);
+    }
+    h3 { margin: 0; font-size: 13px; font-weight: 600; }
+    p { margin: 0; color: var(--figma-color-text-secondary, #666); line-height: 1.4; }
+    button {
+      width: 100%; padding: 10px 12px; font: inherit; font-weight: 500; border-radius: 6px; cursor: pointer;
+      border: 1px solid var(--figma-color-border, #ccc);
+      background: var(--figma-color-bg-secondary, #f5f5f5); color: inherit;
+    }
+    button:hover:not(:disabled) {
+      background: var(--figma-color-bg-brand, #0d99ff); border-color: var(--figma-color-bg-brand, #0d99ff);
+      color: var(--figma-color-text-onbrand, #fff);
+    }
+    button:focus-visible { outline: 2px solid var(--figma-color-border-selected, #0d99ff); outline-offset: 1px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    label { display: flex; gap: 6px; align-items: center; color: var(--figma-color-text-secondary, #666); }
+    .conn { display: flex; gap: 14px; color: var(--figma-color-text-secondary, #666); }
+    .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: #999; }
+    .dot.on { background: #14ae5c; }
+    #status { text-align: center; color: var(--figma-color-text-secondary, #666); min-height: 16px; line-height: 1.4; }
+    #status.error { color: var(--figma-color-text-danger, #f24822); }
+    #fallback { display: none; font-size: 11px; padding: 6px; }
+  </style>
+</head>
+<body>
+  <div>
+    <h3>Figma to Adobe Bridge</h3>
+    <p>Sends selected layers to Adobe in the same position they have in Figma.</p>
+  </div>
+
+  <div class="conn">
+    <span><span class="dot" id="dot-ae"></span>After Effects</span>
+    <span><span class="dot" id="dot-ai"></span>Illustrator</span>
+  </div>
+
+  <button id="btn-ae" disabled>Send to After Effects</button>
+  <button id="btn-ai" disabled>Send to Illustrator</button>
+
+  <label><input type="checkbox" id="opt-png" checked> Send layers with images as PNG</label>
+  <label><input type="checkbox" id="opt-split" checked> Split frames and groups into layers</label>
+  <label><input type="checkbox" id="opt-newdoc" checked> Open in a new file</label>
+  <label><input type="checkbox" id="opt-shapes" checked> Convert to shape layers (After Effects)</label>
+  <label><input type="checkbox" id="opt-text"> Keep text editable (Illustrator)</label>
+
+  <div id="status" role="status">Select a layer to begin.</div>
+  <button id="fallback">Download SVG files instead</button>
+
+  <script>
+    const PORTS = { ae: 3790, ai: 3791 };
+    const NAMES = { ae: 'After Effects', ai: 'Illustrator' };
+    const statusEl = document.getElementById('status');
+    const fallbackBtn = document.getElementById('fallback');
+    const buttons = { ae: document.getElementById('btn-ae'), ai: document.getElementById('btn-ai') };
+    let selectionCount = 0;
+    let lastExport = null;
+
+    function setStatus(text, isError) {
+      statusEl.textContent = text;
+      statusEl.className = isError ? 'error' : '';
+    }
+
+    // ---- Connection check (is the panel open in the Adobe app?) ----
+    const connected = { ae: false, ai: false };
+    async function ping() {
+      for (const t of ['ae', 'ai']) {
+        try {
+          const r = await fetch('http://localhost:' + PORTS[t] + '/ping');
+          connected[t] = r.ok;
+        } catch (e) { connected[t] = false; }
+        document.getElementById('dot-' + t).className = 'dot' + (connected[t] ? ' on' : '');
+      }
+    }
+    ping();
+    setInterval(ping, 3000);
+
+    function refreshButtons() {
+      buttons.ae.disabled = selectionCount === 0;
+      buttons.ai.disabled = selectionCount === 0;
+    }
+
+    function request(target) {
+      fallbackBtn.style.display = 'none';
+      setStatus('Exporting...');
+      parent.postMessage({ pluginMessage: {
+        type: 'transfer',
+        target,
+        keepText: document.getElementById('opt-text').checked,
+        split: document.getElementById('opt-split').checked,
+        imagesAsPng: document.getElementById('opt-png').checked,
+        convertShapes: document.getElementById('opt-shapes').checked
+      } }, '*');
+    }
+    buttons.ae.addEventListener('click', () => request('ae'));
+    buttons.ai.addEventListener('click', () => request('ai'));
+
+    // ---- Send to the Adobe panel ----
+    function toBase64(bytes) {
+      let s = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        s += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(s);
+    }
+
+    // Adds an invisible rectangle the size of the SVG's viewBox. Illustrator then measures the
+    // artwork by its full box (including empty padding around text and icons), not just its ink.
+    function addReferenceRect(svg) {
+      const m = svg.match(/<svg[^>]*>/);
+      if (!m) return svg;
+      let x = 0, y = 0, w, h;
+      const vb = m[0].match(/viewBox="([-\d.\s]+)"/);
+      if (vb) {
+        const p = vb[1].trim().split(/\s+/).map(Number);
+        x = p[0]; y = p[1]; w = p[2]; h = p[3];
+      } else {
+        const wm = m[0].match(/\swidth="([\d.]+)"/), hm = m[0].match(/\sheight="([\d.]+)"/);
+        if (!wm || !hm) return svg;
+        w = parseFloat(wm[1]); h = parseFloat(hm[1]);
+      }
+      if (!(w > 0 && h > 0)) return svg;
+      const rect = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="none" stroke="none"/>';
+      return svg.replace(m[0], () => m[0] + rect);
+    }
+
+    async function sendToAdobe(msg) {
+      const dec = new TextDecoder();
+      const payload = {
+        frame: msg.frame,
+        options: { convertShapes: msg.convertShapes, newDoc: document.getElementById('opt-newdoc').checked },
+        items: msg.items.map(i => {
+          const bytes = new Uint8Array(i.bytes);
+          const base = { name: i.name, x: i.x, y: i.y, w: i.w, h: i.h, kind: i.kind };
+          return i.kind === 'png'
+            ? Object.assign(base, { png: toBase64(bytes) })
+            : Object.assign(base, { svg: msg.target === 'ai' ? addReferenceRect(dec.decode(bytes)) : dec.decode(bytes) });
+        })
+      };
+      try {
+        const res = await fetch('http://localhost:' + PORTS[msg.target] + '/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const out = await res.json();
+        if (out.ok) {
+          const problems = (out.errors || []).concat(msg.skipped || []);
+          if (problems.length) {
+            setStatus('Sent ' + out.made + ' of ' + (out.total + (msg.skipped || []).length) + '. Problem with: ' + problems.join(' | '), true);
+          } else {
+            setStatus('Sent ' + out.made + (out.made === 1 ? ' layer' : ' layers') + ' to ' + NAMES[msg.target] + '.');
+          }
+        } else {
+          setStatus(NAMES[msg.target] + ' reported: ' + out.error, true);
+        }
+      } catch (e) {
+        setStatus('Could not reach ' + NAMES[msg.target] + '. Open Window > Extensions > Figma Bridge there, then try again.', true);
+        fallbackBtn.style.display = 'block';
+      }
+    }
+
+    // ---- Fallback: plain SVG / zip download ----
+    function download(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    const crcTable = (() => {
+      const t = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+      return t;
+    })();
+    function crc32(buf) { let c = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) c = crcTable[(c ^ buf[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+    function makeZip(files) {
+      const enc = new TextEncoder(); const parts = []; const central = []; let offset = 0;
+      for (const f of files) {
+        const name = enc.encode(f.name), data = f.bytes, crc = crc32(data);
+        const lh = new DataView(new ArrayBuffer(30));
+        lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+        lh.setUint16(12, 33, true); lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true);
+        lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true);
+        parts.push(new Uint8Array(lh.buffer), name, data);
+        const ch = new DataView(new ArrayBuffer(46));
+        ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+        ch.setUint16(14, 33, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true);
+        ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+        central.push(new Uint8Array(ch.buffer), name);
+        offset += 30 + name.length + data.length;
+      }
+      const cdSize = central.reduce((n, p) => n + p.length, 0);
+      const end = new DataView(new ArrayBuffer(22));
+      end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+      end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+      return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
+    }
+    fallbackBtn.addEventListener('click', () => {
+      if (!lastExport) return;
+      const used = {};
+      const files = lastExport.items.map(i => {
+        let base = (i.name || 'layer').replace(/[^a-zA-Z0-9_-]+/g, '_') || 'layer';
+        used[base] = (used[base] || 0) + 1;
+        return { name: (used[base] > 1 ? base + '_' + used[base] : base) + (i.kind === 'png' ? '.png' : '.svg'), bytes: new Uint8Array(i.bytes) };
+      });
+      if (files.length === 1) download(new Blob([files[0].bytes], { type: files[0].name.endsWith('.png') ? 'image/png' : 'image/svg+xml' }), files[0].name);
+      else download(makeZip(files), 'figma-export.zip');
+    });
+
+    // ---- Messages from code.js ----
+    window.onmessage = (event) => {
+      const msg = event.data && event.data.pluginMessage;
+      if (!msg) return;
+      if (msg.type === 'selection') {
+        selectionCount = msg.count;
+        refreshButtons();
+        setStatus(msg.count ? msg.count + (msg.count === 1 ? ' layer selected.' : ' layers selected.') : 'Select a layer to begin.');
+      } else if (msg.type === 'export-ready') {
+        lastExport = msg;
+        setStatus('Sending...');
+        sendToAdobe(msg);
+      } else if (msg.type === 'error') {
+        setStatus(msg.message, true);
+      }
+    };
+  </script>
+</body>
+</html>
