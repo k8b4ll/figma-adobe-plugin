@@ -11,17 +11,21 @@ Everything stays on your computer. The plugin talks to the panel over `localhost
 
 ## One-Time Installment
 
-### 1. Adobe panel
+### 1. Adobe Panel
 
-Download this repository (Code > Download ZIP) and unzip the folder to your computer.   
+Download this repository (**Code > Download ZIP**) and unzip the folder to your computer[cite: 3]. 
 
-Windows: Double-click install-win.bat.
+Choose your operating system below to install the extension panel:
 
-macOS: Follow these quick steps to run the installer:
+#### 🪟 Windows Users
+Double-click the **`install-win.bat`** file in the root folder[cite: 2, 3].
 
-Open the Terminal app (press Cmd + Space, type "Terminal", and hit Enter).
+#### 🍏 Mac Users
+Don't let the Terminal scare you—just follow these 3 quick steps:
 
-Type cd (type cd followed by a space). Drag and drop the unzipped project folder from your Finder directly into the Terminal window. (This will automatically fill in the folder's file path). Hit Enter.
+1. Open the **Terminal** app (Press `Cmd + Space`, type *Terminal*, and hit Enter).
+2. Type `cd ` (type `cd` followed by a **space**), then drag and drop your unzipped project folder directly into the Terminal window and hit **Enter**.
+3. Copy and paste these two commands one by one:
 
 Paste this command to grant permission to run the installer:  
 ```
