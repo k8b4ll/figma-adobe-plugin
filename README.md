@@ -56,6 +56,6 @@ In plain terms: you're free to use, copy, modify, and share this plugin, includi
 
 Copyright (c) 2026 katelyn moro
 
-Disclaimer
+## Disclaimer
 
 Figma to Adobe Bridge is an independent project. It is not affiliated with, endorsed by, or sponsored by Figma, Inc. or Adobe Inc. Figma, Adobe, Illustrator, and After Effects are trademarks of their respective owners.
