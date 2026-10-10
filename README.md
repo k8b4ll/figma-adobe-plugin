@@ -22,6 +22,29 @@ Restart After Effects / Illustrator, then open **Window > Extensions > Figma Bri
 
 The installer turns on Adobe's "unsigned panel" setting (`PlayerDebugMode`) so the panel loads.
 
+## Project Structure
+
+figma-adobe-bridge/
+├── README.md
+├── LICENSE
+├── .gitignore
+├── install-win.bat          Windows installer for the Adobe panel
+├── install-mac.sh           Mac installer for the Adobe panel
+│
+├── figma-plugin/            The plugin you import into Figma
+│   ├── manifest.json        Plugin settings
+│   ├── code.js              Reads your selection and exports layers
+│   └── ui.html              The plugin window
+│
+└── bridge-panel/            The panel that runs inside Illustrator / After Effects
+    ├── index.html           The panel window
+    ├── main.js              Receives layers from Figma
+    ├── CSXS/
+    │   └── manifest.xml     Tells Adobe how to load the panel
+    └── host/
+        ├── ai.jsx           Places layers in Illustrator
+        └── ae.jsx           Places layers in After Effects
+
 ### 2. Figma plugin
 
 In the Figma desktop app: **Menu > Plugins > Development > Import plugin from manifest...** and choose `figma-plugin/manifest.json`.
