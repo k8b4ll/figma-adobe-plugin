@@ -9,18 +9,31 @@ It has two parts:
 
 Everything stays on your computer. The plugin talks to the panel over `localhost` only.
 
-## Install
+## One-Time Installment
 
-### 1. Adobe panel (once)
+### 1. Adobe panel
 
-Download this repo (Code > Download ZIP) and unzip it.
+Download this repository (Code > Download ZIP) and unzip the folder to your computer.   
 
-- **macOS:** open Terminal in the folder and run `./install-mac.sh`
-- **Windows:** double-click `install-win.bat`
+Windows: Double-click install-win.bat.
 
-Restart After Effects / Illustrator, then open **Window > Extensions > Figma Bridge**. Leave the panel open (dock it somewhere); it only receives layers while it is open.
+macOS: Follow these quick steps to run the installer:
 
-The installer turns on Adobe's "unsigned panel" setting (`PlayerDebugMode`) so the panel loads.
+Open the Terminal app (press Cmd + Space, type "Terminal", and hit Enter).
+
+Type cd  (type cd followed by a space). Drag and drop the unzipped project folder from your Finder directly into the Terminal window. (This will automatically fill in the folder's file path). Hit Enter.
+
+Paste this command to grant permission to run the installer:  
+,,,
+Bashchmod +x install-mac.sh
+,,,
+
+Finally, run the script by typing:   
+,,,
+Bash./install-mac.sh
+,,,
+
+(What to expect: Terminal will output Installed. and give you instructions on opening the panel).   Restart After Effects or Illustrator, then open Window > Extensions > Figma Bridge. Leave the panel open (dock it somewhere); it only receives layers while it is open.   (Note: The installer automatically turns on Adobe's "unsigned panel" setting (PlayerDebugMode) so custom developer extensions are permitted to load).
 
 ## Project Structure
 ```
