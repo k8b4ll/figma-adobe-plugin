@@ -1,0 +1,14 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+.idea/
+
+# Packages and downloads
+node_modules/
+*.zip
+
+# Temporary files created by the panel
+FigmaBridge/
