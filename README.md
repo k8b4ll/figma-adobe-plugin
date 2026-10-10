@@ -23,7 +23,7 @@ Restart After Effects / Illustrator, then open **Window > Extensions > Figma Bri
 The installer turns on Adobe's "unsigned panel" setting (`PlayerDebugMode`) so the panel loads.
 
 ## Project Structure
-
+```
 figma-adobe-bridge/
 ├── README.md
 ├── LICENSE
@@ -44,7 +44,7 @@ figma-adobe-bridge/
     └── host/
         ├── ai.jsx           Places layers in Illustrator
         └── ae.jsx           Places layers in After Effects
-
+```
 ### 2. Figma plugin
 
 In the Figma desktop app: **Menu > Plugins > Development > Import plugin from manifest...** and choose `figma-plugin/manifest.json`.
