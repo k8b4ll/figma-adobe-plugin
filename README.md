@@ -17,11 +17,11 @@ Download this repository (**Code > Download ZIP**) and unzip the folder to your 
 
 Choose your operating system below to install the extension panel:
 
-#### 🪟 Windows Users
+#### ⊞ Windows Users
+
 Double-click the **`install-win.bat`** file in the root folder[cite: 2, 3].
 
-#### 🍏 Mac Users
-Don't let the Terminal scare you—just follow these 3 quick steps:
+####  Mac Users
 
 1. Open the **Terminal** app (Press `Cmd + Space`, type *Terminal*, and hit Enter).
 
@@ -43,9 +43,9 @@ Bash./install-mac.sh
 
 ### Next Steps
 
-1.Completely restart After Effects or Illustrator.   
+1. Completely restart After Effects or Illustrator.   
 
-2.Open Window > Extensions > Figma Bridge. (Keep this panel open and docked while using the plugin[cite: 3]). 
+2. Open Window > Extensions > Figma Bridge. (Keep this panel open and docked while using the plugin[cite: 3]). 
 
 ### Figma plugin
 
