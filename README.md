@@ -11,7 +11,7 @@ Everything stays on your computer. The plugin talks to the panel over `localhost
 
 ## One-Time Installment
 
-### 1. Adobe Panel
+### Adobe Panel
 
 Download this repository (**Code > Download ZIP**) and unzip the folder to your computer[cite: 3]. 
 
@@ -24,22 +24,32 @@ Double-click the **`install-win.bat`** file in the root folder[cite: 2, 3].
 Don't let the Terminal scare you—just follow these 3 quick steps:
 
 1. Open the **Terminal** app (Press `Cmd + Space`, type *Terminal*, and hit Enter).
+
 2. Type `cd ` (type `cd` followed by a **space**), then drag and drop your unzipped project folder directly into the Terminal window and hit **Enter**.
+
 3. Copy and paste these two commands one by one:
 
-Paste this command to grant permission to run the installer:  
+#### Paste this command to grant permission to run the installer:  
 ```
 Bashchmod +x install-mac.sh
 ```
 
-Finally, run the script by typing:   
+#### Finally, run the script by typing:   
 ```
 Bash./install-mac.sh
 ```
 
-(What to expect: Terminal will output Installed. and give you instructions on opening the panel).   
+[>] What to expect: Terminal will output Installed. to confirm success.   
 
-Restart After Effects or Illustrator, then open Window > Extensions > Figma Bridge. Leave the panel open (dock it somewhere); it only receives layers while it is open.   (Note: The installer automatically turns on Adobe's "unsigned panel" setting (PlayerDebugMode) so custom developer extensions are permitted to load).
+### Next Steps
+
+1.Completely restart After Effects or Illustrator.   
+
+2.Open Window > Extensions > Figma Bridge. (Keep this panel open and docked while using the plugin[cite: 3]). 
+
+### Figma plugin
+
+In the Figma desktop app: **Menu > Plugins > Development > Import plugin from manifest...** and choose `figma-plugin/manifest.json`.
 
 ## Project Structure
 ```
@@ -64,9 +74,6 @@ figma-adobe-bridge/
         ├── ai.jsx           Places layers in Illustrator
         └── ae.jsx           Places layers in After Effects
 ```
-### 2. Figma plugin
-
-In the Figma desktop app: **Menu > Plugins > Development > Import plugin from manifest...** and choose `figma-plugin/manifest.json`.
 
 ## Use
 
