@@ -1,7 +1,7 @@
 // Figma to Adobe Bridge - sandbox side. Reads the selection and exports vector/PNG
 // data together with exact coordinates so the Adobe panel can paste in place.
 
-figma.showUI(__html__, { width: 300, height: 420, themeColors: true });
+figma.showUI(__html__, { width: 320, height: 500, themeColors: false });
 
 function sendSelectionInfo() {
   figma.ui.postMessage({ type: 'selection', count: figma.currentPage.selection.length });
